@@ -1,0 +1,17 @@
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\MonkeyFramework.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\MonkeyFramework.pdb
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Microsoft.Xna.Framework.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Microsoft.Xna.Framework.Game.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Microsoft.Xna.Framework.Graphics.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Microsoft.Xna.Framework.Xact.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Newtonsoft.Json.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Stardew Valley.exe
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\StardewModdingAPI.exe
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\xTile.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Lidgren.Network.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Steamworks.NET.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\Newtonsoft.Json.xml
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\bin\Debug\StardewModdingAPI.pdb
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\obj\Debug\MonkeyFramework.csprojResolveAssemblyReference.cache
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\obj\Debug\MonkeyFramework.dll
+C:\Users\kiada\documents\visual studio 2015\Projects\SMAPI\Butchery\MonkeyFramework\obj\Debug\MonkeyFramework.pdb

@@ -4,11 +4,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6842732F-3F8E-4D7B-9381-8294923B03B7}</ProjectGuid>
+    <ProjectGuid>{8C75A1CF-7C4F-422D-AD1A-180F40D8C687}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Butchery</RootNamespace>
-    <AssemblyName>Butchery</AssemblyName>
+    <RootNamespace>MonkeyFramework</RootNamespace>
+    <AssemblyName>MonkeyFramework</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -53,7 +53,7 @@
       <HintPath>D:\SteamLibrary\steamapps\common\Stardew Valley\Stardew Valley.exe</HintPath>
     </Reference>
     <Reference Include="StardewModdingAPI">
-      <HintPath>..\..\..\..\..\SMAPI-0.38.1A\SMAPI-0.38.1A\StardewModdingAPI.exe</HintPath>
+      <HintPath>..\..\..\..\..\SMAPI-0.38.5 (1)\SMAPI-0.38.5\StardewModdingAPI\bin\x86\Debug\StardewModdingAPI.exe</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -68,24 +68,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ArtisanGoods\SmokedMeat.cs" />
-    <Compile Include="ArtisanMachines\MeatSmoker.cs" />
-    <Compile Include="ButcherKnife.cs" />
-    <Compile Include="Butchery.cs" />
-    <Compile Include="MonkeyRecipe.cs" />
+    <Compile Include="ArtisanMachine.cs" />
+    <Compile Include="ArtisanGoods.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SaveModels\ArtisanGoodsSaveModel.cs" />
-    <Compile Include="SaveModels\ArtisanMachineSaveModel.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Ideas.txt" />
-  </ItemGroup>
-  <ItemGroup />
-  <ItemGroup>
-    <ProjectReference Include="..\MonkeyFramework\MonkeyFramework.csproj">
-      <Project>{8c75a1cf-7c4f-422d-ad1a-180f40d8c687}</Project>
-      <Name>MonkeyFramework</Name>
-    </ProjectReference>
+    <Compile Include="JsonSave\SaveGame.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

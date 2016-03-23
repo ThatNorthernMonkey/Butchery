@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Butchery.SaveModels
 {
-    public class ArtisanMachinesSaveModel
+    public class ArtisanMachineSaveModel
     {
         public string Name { get; set; }
         public string Description { get; set; }

@@ -17,12 +17,14 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
-using MonkeySaveGameSerializer;
+using MonkeyFramework.Save;
 using Butchery.SaveModels;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using StardewValley.Objects;
 using Microsoft.Xna.Framework.Input;
+using Butchery.ArtisanMachines;
+using MonkeyFramework;
 
 namespace Butchery
 {
@@ -41,17 +43,14 @@ namespace Butchery
         public static Dictionary<int, string> monkeyInformation;
 
         public static List<ArtisanGoodsSaveModel> ArtisanGoodsToSave;
-        public static List<ArtisanMachinesSaveModel> ArtisanMachinesToSave;
+        public static List<ArtisanMachineSaveModel> ArtisanMachinesToSave;
 
-        private MonkeySaveGame Butchery_ArtisanGoods;
-        private MonkeySaveGame Butchery_ArtisanMachines;
+        private JsonSave Butchery_ArtisanGoods;
+        private JsonSave Butchery_ArtisanMachines;
 
 
         ContentManager MonkeyManager;
 
-
-        public StardewValley.Object Beef { get; set; }
-        public int ButcheryLevel { get; set; }
         private bool MeatHasLoaded { get; set; }
         private bool HasReceivedItem { get; set; }
         public bool HasCreatedUniqueSaveItems { get; set; }
@@ -59,7 +58,7 @@ namespace Butchery
         public Butchery()
         {
             ArtisanGoodsToSave = new List<ArtisanGoodsSaveModel>();
-            ArtisanMachinesToSave = new List<ArtisanMachinesSaveModel>();
+            ArtisanMachinesToSave = new List<ArtisanMachineSaveModel>();
 
             MeatHasLoaded = false;
             HasReceivedItem = false;
@@ -90,7 +89,7 @@ namespace Butchery
             {
                 // Update and save
                 ArtisanGoodsToSave = new List<ArtisanGoodsSaveModel>();
-                ArtisanMachinesToSave = new List<ArtisanMachinesSaveModel>();
+                ArtisanMachinesToSave = new List<ArtisanMachineSaveModel>();
                 UpdateArtisanGoodsToSave();
                 UpdateArtisanMachinesToSave();
                 Console.WriteLine("Update and save");
@@ -127,33 +126,31 @@ namespace Butchery
                 Game1.objectInformation.Add(GOAT, "Goat/200/15/Basic -14/Meat from a Goat. Leaner than Chicken.");
                 MeatHasLoaded = true;
 
+                //TODO: "Parameter path cannot be null"
                 var root = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
                 MonkeyManager = new ContentManager(Game1.content.ServiceProvider, root);
                 objectSpriteSheet = MonkeyManager.Load<Texture2D>("springobjects");
                 machineSpriteSheet = MonkeyManager.Load<Texture2D>("Craftables");
                 monkeyInformation = MonkeyManager.Load<Dictionary<int, string>>("ObjectInformation");
 
 
-                Butchery_ArtisanGoods = new MonkeySaveGame(root, "butchery_artisangoods");
-                Butchery_ArtisanMachines = new MonkeySaveGame(root, "butchery_artisanmachines");
+                Butchery_ArtisanGoods = new JsonSave(root, "butchery_artisangoods");
+                Butchery_ArtisanMachines = new JsonSave(root, "butchery_artisanmachines");
 
             }
 
             if (Game1.currentLocation.name.Equals("Farm") && !HasReceivedItem)
             {
-
-                
+       
                 //var burger = new ButcherArtisanGoods();
-                //Game1.player.addItemToInventory(burger);
+                //Game1.player.addItemToInventory(burger);            
                 
-                /*
                 for(int i = 0; i < 6; i++)
                 {
-                    var smoker = new ButcherArtisanMachine();
+                    var smoker = new MeatSmoker(machineSpriteSheet);
                     Game1.player.addItemToInventory(smoker);
                 }
-                */
+                
             }
         }
 
@@ -272,7 +269,8 @@ namespace Butchery
 
         private void TestSaving()
         {
-            if(ArtisanMachinesToSave != null && ArtisanMachinesToSave.Count > 0)
+
+            if (ArtisanMachinesToSave != null && ArtisanMachinesToSave.Count > 0)
             {
                 Butchery_ArtisanMachines.Save(ArtisanMachinesToSave);
             }
@@ -309,7 +307,7 @@ namespace Butchery
                 {
                     foreach (var loc in locations)
                     {
-                        foreach (var c in loc.objects.Where(c => c.Value is ButcherArtisanMachine))
+                        foreach (var c in loc.objects.Where(c => c.Value is ArtisanMachine))
                         {
                             try
                             {
@@ -327,21 +325,108 @@ namespace Butchery
                             loc.removeObject(o.Key, false);
                         }
                     }
+
+                    // Chests
+                    foreach (var loc in locations)
+                    {
+                        foreach (var c in loc.objects.Values.Where(c => c is Chest))
+                        {
+                            Chest chest = c as Chest;
+                            chest.items.RemoveAll(i => i.GetType() == typeof(ArtisanMachine));
+                        }
+                    }
+
+                    //Player inventory
+                    for (int i = 0; i < Game1.player.items.Count; i++)
+                    {
+                        if (Game1.player.items[i] != null)
+                        {
+                            if (Game1.player.items[i].GetType() == typeof(ArtisanMachine))
+                            {
+                                Game1.player.items[i] = null;
+                            }
+                        }
+                    }
                 }
             }
         }
 
         private void UpdateArtisanMachinesToSave()
         {
+
+            //Player inv
+            for (int i = 0; i < Game1.player.items.Count; i++)
+            {
+                if (Game1.player.items[i] != null)
+                {
+                    if (Game1.player.items[i].GetType() == typeof(ArtisanMachine))
+                    {
+                        var obj = Game1.player.items[i];
+                        var newMachine = new ArtisanMachineSaveModel
+                        {
+                            Name = obj.Name,
+                            ParentSheetIndex = obj.parentSheetIndex,
+                            Category = obj.category,
+                            Description = obj.getDescription(),
+                            Price = obj.salePrice(),
+                            Location = "Char",
+                            Position = Vector2.Zero
+                        };
+
+                        if (!ArtisanMachinesToSave.Contains(newMachine))
+                        {
+                            ArtisanMachinesToSave.Add(newMachine);
+                        }
+                    }
+                }
+            }
+
             var locations = Game1.locations;
 
+            //Chests
             foreach (var loc in locations)
             {
-                foreach (var c in loc.objects.Values.Where(c => c is ButcherArtisanMachine))
+                foreach (var c in loc.objects.Values.Where(c => c is Chest))
                 {
-                    var machine = c as ButcherArtisanMachine;
+                    Chest chest = c as Chest;
+                    var items = chest.items.Select(x => x).Where(x => x.GetType() == typeof(ArtisanMachine));
+                    if (items != null && items.Count() > 0)
+                    {
+                        foreach (var i in items)
+                        {
+                            var newMachine = new ArtisanMachineSaveModel
+                            {
+                                Name = i.Name,
+                                ParentSheetIndex = i.parentSheetIndex,
+                                Category = i.category,
+                                Description = i.getDescription(),
+                                Price = i.salePrice(),
+                                Location = loc.Name,
+                                Position = new Vector2 { X = c.boundingBox.X, Y = c.boundingBox.Y }
+                            };
 
-                    var newMachine = new ArtisanMachinesSaveModel();
+                            if (ArtisanMachinesToSave == null)
+                            {
+                                ArtisanMachinesToSave = new List<ArtisanMachineSaveModel>();
+                            }
+
+                            if (!ArtisanMachinesToSave.Contains(newMachine))
+                            {
+                                ArtisanMachinesToSave.Add(newMachine);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Placed machines
+            foreach (var loc in locations)
+            {
+                foreach (var c in loc.objects.Values.Where(c => c is ArtisanMachine))
+                {
+                    var machine = c as ArtisanMachine;
+
+                    var newMachine = new ArtisanMachineSaveModel();
                     newMachine.Name = machine.Name;
                     newMachine.Category = machine.Category;
                     newMachine.Description = machine.getDescription();
@@ -374,38 +459,69 @@ namespace Butchery
 
         private void LoadArtisanMachines()
         {
-            var dyn = Butchery_ArtisanMachines.Load<List<ArtisanMachinesSaveModel>>();
+            var dyn = Butchery_ArtisanMachines.Load<List<ArtisanMachineSaveModel>>();
             var locations = Game1.locations;
             foreach (var d in dyn)
             {       
-
                 foreach (var loc in locations)
                 {
                     if(d.Location.Equals(loc.Name))
                     {
-                        var newGoods = new ButcherArtisanMachine();
-                        newGoods.Name = d.Name;
-                        newGoods.ParentSheetIndex = d.ParentSheetIndex;
-                        newGoods.Category = d.Category;
-                        newGoods.description = d.Description;
-                        newGoods.Price = d.Price;
-                        newGoods.CanBeSetDown = d.CanBeSetDown;
-                        newGoods.setOutdoors = d.SetOutdoors;
-                        newGoods.setIndoors = d.SetIndoors;
-                        newGoods.bigCraftable = d.BigCraftable;
-                        newGoods.fragility = d.Fragility;
-                        newGoods.Edibility = d.Edibility;
-                        newGoods.Type = d.Type;
-                        newGoods.minutesUntilReady = d.MinutesUntilReady;
-                        newGoods.isOn = d.IsOn;
+                        var newMachine = new MeatSmoker(machineSpriteSheet);
+                        newMachine.Name = d.Name;
+                        newMachine.ParentSheetIndex = d.ParentSheetIndex;
+                        newMachine.Category = d.Category;
+                        newMachine.description = d.Description;
+                        newMachine.Price = d.Price;
+                        newMachine.CanBeSetDown = d.CanBeSetDown;
+                        newMachine.setOutdoors = d.SetOutdoors;
+                        newMachine.setIndoors = d.SetIndoors;
+                        newMachine.bigCraftable = d.BigCraftable;
+                        newMachine.fragility = d.Fragility;
+                        newMachine.Edibility = d.Edibility;
+                        newMachine.Type = d.Type;
+                        newMachine.minutesUntilReady = d.MinutesUntilReady;
+                        newMachine.isOn = d.IsOn;
 
                         var pos = new Vector2 { X = d.Position.X / Game1.tileSize, Y = d.Position.Y / Game1.tileSize };
-                        newGoods.tileLocation = pos;
-                        //newGoods.placementAction(loc, (int)pos.X, (int)pos.Y, Game1.player);
+                        newMachine.tileLocation = pos;
                         
                         if(!loc.objects.ContainsKey(pos))
                         {
-                            loc.objects.Add(pos, newGoods);
+                            loc.objects.Add(pos, newMachine);
+                        }
+                    }
+                }
+
+                //Player inventory
+                if (d.Location.Equals("Char"))
+                {
+                    var newMachine = new MeatSmoker(machineSpriteSheet);
+                    newMachine.name = d.Name;
+                    newMachine.ParentSheetIndex = d.ParentSheetIndex;
+                    newMachine.Category = d.Category;
+                    newMachine.description = d.Description;
+                    newMachine.Price = d.Price;
+
+                    Game1.player.addItemToInventory(newMachine);
+                }
+
+                //Chests
+                foreach (var loc in locations)
+                {
+                    foreach (var c in loc.objects.Values.Where(c => c is Chest))
+                    {
+                        Chest chest = c as Chest;
+                        if (chest.boundingBox.X == d.Position.X && chest.boundingBox.Y == d.Position.Y && loc.Name.Equals(d.Location))
+                        {
+                            var newMachine = new MeatSmoker(machineSpriteSheet);
+                            newMachine.name = d.Name;
+                            newMachine.ParentSheetIndex = d.ParentSheetIndex;
+                            newMachine.Category = d.Category;
+                            newMachine.description = d.Description;
+                            newMachine.Price = d.Price;
+
+                            chest.items.Add(newMachine);
                         }
                     }
                 }
@@ -413,7 +529,7 @@ namespace Butchery
 
             foreach(var loc in locations)
             {
-                foreach (var c in loc.objects.Values.Where(c => c is ButcherArtisanMachine))
+                foreach (var c in loc.objects.Values.Where(c => c is ArtisanMachine))
                 {
                     c.boundingBox.X = (int)c.tileLocation.X * Game1.tileSize;
                     c.boundingBox.Y = (int)c.tileLocation.Y * Game1.tileSize;
@@ -423,6 +539,7 @@ namespace Butchery
             }
         }
         #endregion
+
         #region ArtisanGoods
         private void DeleteAllArtisanGoodsBeforeSleep()
         {
@@ -437,7 +554,7 @@ namespace Butchery
                         foreach(var c in loc.objects.Values.Where(c => c is Chest))
                         {
                             Chest chest = c as Chest;
-                            chest.items.RemoveAll(i => i.GetType() == typeof(ButcherArtisanGoods));
+                            chest.items.RemoveAll(i => i.GetType() == typeof(ArtisanGoods));
                         }
                     }
 
@@ -446,7 +563,7 @@ namespace Butchery
                     {
                         if(Game1.player.items[i] != null)
                         {
-                            if (Game1.player.items[i].GetType() == typeof(ButcherArtisanGoods))
+                            if (Game1.player.items[i].GetType() == typeof(ArtisanGoods))
                             {
                                 Game1.player.items[i] = null;
                             }
@@ -465,7 +582,7 @@ namespace Butchery
             {
                 if(Game1.player.items[i] != null)
                 {
-                    if (Game1.player.items[i].GetType() == typeof(ButcherArtisanGoods))
+                    if (Game1.player.items[i].GetType() == typeof(ArtisanGoods))
                     {
                         var obj = Game1.player.items[i];
                         var newGoods = new ArtisanGoodsSaveModel
@@ -493,7 +610,7 @@ namespace Butchery
                 foreach(var c in loc.objects.Values.Where(c => c is Chest))
                 {
                     Chest chest = c as Chest;
-                    var items = chest.items.Select(x => x).Where(x => x.GetType() == typeof(ButcherArtisanGoods));
+                    var items = chest.items.Select(x => x).Where(x => x.GetType() == typeof(ArtisanGoods));
                     if(items != null && items.Count() > 0)
                     {
                         foreach(var i in items)
@@ -539,12 +656,7 @@ namespace Butchery
                 //Char
                 if(d.Location.Equals("Char"))
                 {
-                    var newGoods = new ButcherArtisanGoods(d.Name);
-                    newGoods.ParentSheetIndex = d.ParentSheetIndex;
-                    newGoods.Category = d.Category;
-                    newGoods.description = d.Description;
-                    newGoods.Price = d.Price;
-
+                    var newGoods = new SmokedMeat(objectSpriteSheet);                    
                     Game1.player.addItemToInventory(newGoods);
                 }
 
@@ -558,11 +670,7 @@ namespace Butchery
                         Chest chest = c as Chest;
                         if(chest.boundingBox.X == d.Position.X && chest.boundingBox.Y == d.Position.Y && loc.Name.Equals(d.Location))
                         {
-                            var newGoods = new ButcherArtisanGoods(d.Name);
-                            newGoods.ParentSheetIndex = d.ParentSheetIndex;
-                            newGoods.Category = d.Category;
-                            newGoods.description = d.Description;
-                            newGoods.Price = d.Price;
+                            var newGoods = new SmokedMeat(objectSpriteSheet);
 
                             chest.items.Add(newGoods);
                         }
@@ -580,7 +688,14 @@ var recipe = new MonkeyRecipe("Beef Burger", true);
 Game1.player.cookingRecipes.Add("Beef Burger", 0);
 Console.WriteLine("break");
 */
+/*
 
+    SmokedMeat : ArtisanGoods
+    SmokedFish : ArtisanGoods
+
+    MeatSmoker : ArtisanMachines
+
+ */
 /*
 
 Spaghetti: "246 1 256 1/5 5/224/f Lewis 3"
