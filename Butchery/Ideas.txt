@@ -1,0 +1,44 @@
+﻿Artisan Machines
+----------------
+Smoker
+Salter
+Curer
+----------------
+Artisan Goods
+----------------
+Smoked Meat
+Artisan Organs?
+Smoked Fish
+Salted Meat
+Cured Meat
+
+----------------
+Objects
+----------------
+Bones
+Raw Organs
+Sedative
+Leather
+Skin
+
+----------------
+Tools
+----------------
+Butcher Knife
+
+----------------
+Cooking Recipes
+----------------
+Bacon & Eggs
+Burgers
+
+----------------
+Crafting Recipes
+----------------
+Bone Fertilizer
+
+----------------
+Buildings
+----------------
+SlaughterHouse
+Meat Curing?
